@@ -15,6 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+type paging = Paging_io_page | Paging_cstruct
+
 (** Expose the contents of a directory as a static filesystem. *)
 
 val output_generated_by: out_channel -> string -> unit
@@ -27,7 +29,7 @@ val scan_file: string -> string -> unit
 val output_implementation: out_channel -> unit
 (** Output the footer. *)
 
-val output_lwt_skeleton_ml: out_channel -> unit
+val output_lwt_skeleton_ml: out_channel -> paging -> unit
 (** Output the Lwt helpers. *)
 
 val output_lwt_skeleton_mli: out_channel -> unit

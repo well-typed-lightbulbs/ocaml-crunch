@@ -147,7 +147,13 @@ let read name =
   | None   -> None
   | Some c -> Some (String.concat \"\" c)"
 
-let output_lwt_skeleton_ml oc =
+type paging = Paging_io_page | Paging_cstruct
+
+let output_buffer = function
+  | Paging_io_page -> "Io_page.to_cstruct (Io_page.get 1)"
+  | Paging_cstruct -> "Cstruct.create_unsafe len"
+
+let output_lwt_skeleton_ml oc paging =
   fprintf oc "
 open Lwt
 
@@ -205,8 +211,8 @@ let read () name offset len =
   | None   -> return (Error (`Unknown_key name))
   | Some c ->
     let bufs = List.map (fun buf ->
-      let pg = Io_page.to_cstruct (Io_page.get 1) in
       let len = String.length buf in
+      let pg = %s in
       Cstruct.blit_from_string buf 0 pg 0 len;
       Cstruct.sub pg 0 len
     ) (filter_blocks offset len c) in
@@ -215,7 +221,7 @@ let read () name offset len =
 let connect () = return_unit
 
 let disconnect () = return_unit
-"
+" (output_buffer paging)
 
 let output_lwt_skeleton_mli oc =
   fprintf oc "

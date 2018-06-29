@@ -49,8 +49,9 @@ let walker output mode dirs exts =
   List.iter (Crunch.walk_directory_tree exts Crunch.scan_file) dirs;
   Crunch.output_generated_by oc binary;
   Crunch.output_implementation oc;
-  begin match mode with
-    | `Lwt   -> Crunch.output_lwt_skeleton_ml oc
+  begin match mode with 
+    | `Lwt   -> Crunch.output_lwt_skeleton_ml oc Paging_io_page
+    | `Lwt_no_io_page -> Crunch.output_lwt_skeleton_ml oc Paging_cstruct 
     | `Plain -> Crunch.output_plain_skeleton_ml oc
   end;
   close_out oc;
@@ -71,8 +72,8 @@ let () =
     ~doc:"Directories to recursively walk and crunch.") in
   let output = Arg.(value & opt (some string) None & info ["o";"output"] ~docv:"OUTPUT"
     ~doc:"Output file for the OCaml module.") in
-  let mode = Arg.(value & opt (enum ["lwt",`Lwt; "plain",`Plain]) `Lwt & info ["m";"mode"] ~docv:"MODE"
-    ~doc:"Interface access mode: 'lwt' or 'plain'. 'lwt' is the default.") in
+  let mode = Arg.(value & opt (enum ["lwt",`Lwt; "plain",`Plain; "lwt-no-io-page", `Lwt_no_io_page;]) `Lwt & info ["m";"mode"] ~docv:"MODE"
+    ~doc:"Interface access mode: 'lwt', 'plain' or 'lwt-no-io-page'. 'lwt' is the default.") in
   let exts = Arg.(value & opt_all string [] & info ["e";"ext"] ~docv:"VALID EXTENSION"
     ~doc:"If specified, only these extensions will be included in the crunched output. If not specified, then all files will be crunched into the output module.") in
   let cmd_t = Term.(pure walker $ output $ mode $ dirs $ exts) in
